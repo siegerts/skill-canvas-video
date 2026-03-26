@@ -1,29 +1,3 @@
-# Exporting to MP4
-
-## Overview
-
-Use Puppeteer to render each frame at high resolution, then stitch with FFmpeg.
-
-## Requirements
-
-- Node.js
-- `npm install puppeteer`
-- `ffmpeg` on PATH
-
-## Usage
-
-Run the export script (adapt the script below per project):
-
-```bash
-node export.js horizontal
-node export.js vertical
-```
-
-## Export script template
-
-Use this script as-is. Adapt only the `FORMATS` config block for each project.
-
-```javascript
 #!/usr/bin/env node
 const puppeteer = require('puppeteer');
 const fs = require('fs');
@@ -45,8 +19,8 @@ if (!fmt) { console.error(`Unknown format: ${FORMAT}. Use: ${Object.keys(FORMATS
 
 const TOTAL_FRAMES = FPS * (fmt.duration / 1000);
 const OUT_W = fmt.w * SCALE, OUT_H = fmt.h * SCALE;
-const FRAMES_DIR = path.join(__dirname, `frames_${FORMAT}`);
-const OUTPUT_FILE = path.join(__dirname, `output_${FORMAT}_${SCALE}x.mp4`);
+const FRAMES_DIR = path.join(__dirname, '..', `frames_${FORMAT}`);
+const OUTPUT_FILE = path.join(__dirname, '..', `output_${FORMAT}_${SCALE}x.mp4`);
 
 async function main() {
     if (fs.existsSync(FRAMES_DIR)) fs.rmSync(FRAMES_DIR, { recursive: true });
@@ -58,7 +32,8 @@ async function main() {
     const page = await browser.newPage();
     await page.setViewport({ width: OUT_W, height: OUT_H, deviceScaleFactor: 1 });
 
-    await page.goto(`file://${path.join(__dirname, fmt.html)}`, { waitUntil: 'networkidle0' });
+    const htmlPath = path.join(__dirname, '..', fmt.html);
+    await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0' });
     await page.waitForFunction('window.animation && window.animation.isPlaying');
     await page.evaluate(() => window.animation.stop());
 
@@ -102,7 +77,7 @@ async function main() {
         'ffmpeg', '-y',
         '-framerate', String(FPS),
         '-i', path.join(FRAMES_DIR, 'frame_%05d.png'),
-        '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', // CRF 18 = high quality
+        '-c:v', 'libx264', '-preset', 'slow', '-crf', '18',
         '-pix_fmt', 'yuv420p',
         OUTPUT_FILE
     ].join(' '), { stdio: 'inherit' });
@@ -112,13 +87,3 @@ async function main() {
 }
 
 main().catch(err => { console.error(err); process.exit(1); });
-```
-
-## How it works
-
-1. Launches headless Chromium, loads the HTML page
-2. Stops the live `requestAnimationFrame` loop
-3. Rebuilds animation at export resolution (e.g., 3840×2160 for 2×)
-4. Calls `renderFrame(timeMs)` per frame, advancing time manually
-5. Screenshots canvas to PNG, stitches into MP4 with ffmpeg
-6. Cleans up frame PNGs

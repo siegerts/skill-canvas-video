@@ -92,7 +92,8 @@ my-animation/
 ├── animation.html          # The animation page
 ├── js/
 │   └── animation.js        # Animation class
-├── export.js               # Puppeteer + FFmpeg export script
+├── scripts/
+│   └── export.js           # Puppeteer + FFmpeg export (bundled, adapt FORMATS block)
 └── fonts/                  # Custom fonts (optional)
 ```
 
