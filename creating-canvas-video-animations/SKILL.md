@@ -1,6 +1,7 @@
 ---
 name: creating-canvas-video-animations
 description: Creates animated video content using HTML5 Canvas and JavaScript. Generates self-contained HTML files with canvas-based animations that can be previewed in a browser and exported to MP4 using Puppeteer and FFmpeg. Use when the user wants to create animated videos, motion graphics, promotional clips, tutorial animations, or any visual content rendered frame-by-frame on canvas.
+license: MIT
 ---
 
 # Creating Canvas Video Animations
